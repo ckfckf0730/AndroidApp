@@ -1,4 +1,4 @@
-package com.example.testapplication.Http;
+package com.example.testapplication.Service;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -17,10 +17,6 @@ import javax.net.ssl.X509TrustManager;
 
 import java.security.cert.X509Certificate;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 public class HttpService
 {
@@ -65,8 +61,8 @@ public class HttpService
             {
                 // 处理成功的响应
                 String responseBody = response.body().string();
-                // 更新 UI 需要在主线程中进行
-                String b = responseBody;
+
+                return responseBody;
             }
         }
         catch (IOException e)
@@ -74,23 +70,7 @@ public class HttpService
             e.printStackTrace();
         }
 
-        return "123";
-//        try (Response response = client.newCall(request).execute())
-//        {
-//            if (response.isSuccessful())
-//            {
-//                // 输出服务器响应内容
-//                return response.body().string();
-//            }
-//            else
-//            {
-//                return "请求失败: " + response.code();
-//            }
-//        }
-//        catch (IOException e)
-//        {
-//            return e.getMessage();
-//        }
+        return null;
     }
 
     public static OkHttpClient getUnsafeOkHttpClient() throws NoSuchAlgorithmException, KeyManagementException
