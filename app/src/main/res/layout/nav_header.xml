@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/layout/nav_header.xml -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#3F51B5"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/nav_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Cloud"
+        android:textColor="#FFFFFF"
+        android:textSize="24sp"/>
+
+    <Button
+        android:id="@+id/nav_home"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Home"
+        android:textColor="#FFFFFF" />
+
+    <Button
+        android:id="@+id/nav_about"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Chat"
+        android:textColor="#FFFFFF" />
+
+    <Button
+        android:id="@+id/nav_contact"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Render"
+        android:textColor="#FFFFFF" />
+</LinearLayout>

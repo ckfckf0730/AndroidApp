@@ -20,7 +20,7 @@ public class    HttpViewModel extends ViewModel
     }
 
     // 通过网络请求获取数据，并更新 LiveData
-    public void fetchDataFromNetwork()
+    public void fetchDataFromNetwork(String url)
     {
         new Thread(new Runnable()
         {
@@ -28,7 +28,7 @@ public class    HttpViewModel extends ViewModel
             public void run()
             {
                 // 假设 HttpService.test() 发起 HTTP 请求并返回文本数据
-                String response = HttpService.test();
+                String response = HttpService.HttpGet(url);
 
                 // 将请求结果传递给 LiveData，这样 UI 可以自动更新
                 data.postValue(response);

@@ -1,15 +1,15 @@
-package com.example.testapplication;
+package com.example.testapplication.Activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.testapplication.Model.HttpViewModel;
-import com.example.testapplication.Service.HtmlService;
+import com.example.testapplication.R;
 
 public class MainActivity extends AppCompatActivity
 {
@@ -22,27 +22,24 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);  // set layout
 
-        // get Button & TextView
-        Button button = findViewById(R.id.button);
-        TextView textView = findViewById(R.id.textView);
+        Button button2 = findViewById(R.id.button2);
 
-        // 创建 ViewModelProvider，用于获取 MainViewModel 实例
         httpViewModel = new ViewModelProvider(this)
                 .get(HttpViewModel.class);
 
-        // 观察 LiveData 数据变化，并更新 UI
         httpViewModel.getData().observe(this, newData -> {
-            // 更新 UI
-            HtmlService.GetCssRel(newData);
-            HtmlService.DeSerializeHtmlText(newData,this);
+            Intent intent = new Intent(MainActivity.this,
+                    PictureListActivity.class);
+            startActivity(intent);
         });
 
-        button.setOnClickListener(new View.OnClickListener()
+        button2.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View v)
             {
-                httpViewModel.fetchDataFromNetwork();
+                httpViewModel.fetchDataFromNetwork(
+                        "https://10.0.2.2:7241/Azure/PictureList");
             }
         });
     }
