@@ -1,7 +1,10 @@
 package com.example.testapplication.Service;
 
+import androidx.lifecycle.MutableLiveData;
+
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -19,10 +22,48 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import java.security.cert.X509Certificate;
+import java.util.Map;
 
 
 public class HttpService
 {
+    public static String ServerHost = "https://10.0.2.2:7241/";
+
+    public static OkHttpClient getUnsafeOkHttpClient() throws NoSuchAlgorithmException, KeyManagementException
+    {
+        // 创建一个不验证证书的 TrustManager
+        TrustManager[] trustAllCertificates = new TrustManager[]
+                {
+                        new X509TrustManager()
+                        {
+                            public X509Certificate[] getAcceptedIssuers()
+                            {
+                                return new X509Certificate[0];  // 返回空数组，避免返回 null
+                            }
+
+                            public void checkClientTrusted(X509Certificate[] certs, String authType)
+                            {
+                            }
+
+                            public void checkServerTrusted(X509Certificate[] certs, String authType)
+                            {
+                            }
+                        }
+                };
+
+        // 初始化 SSLContext
+        SSLContext sslContext = SSLContext.getInstance("TLS");
+        sslContext.init(null, trustAllCertificates, new java.security.SecureRandom());
+
+        // 获取 SSLSocketFactory
+        SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
+
+        // 创建 OkHttpClient 并配置 SSL
+        return new OkHttpClient.Builder()
+                .sslSocketFactory(sslSocketFactory, (X509TrustManager) trustAllCertificates[0]) // 使用自定义的 TrustManager
+                .hostnameVerifier((hostname, session) -> true)  // 忽略主机名验证
+                .build();
+    }
 
     public static String HttpGet(String url)
     {
@@ -72,47 +113,91 @@ public class HttpService
         return null;
     }
 
-    public static OkHttpClient getUnsafeOkHttpClient() throws NoSuchAlgorithmException, KeyManagementException
+    public static void HttpPostAsync(String url,
+                                     Map<String, String> params,
+                                     MutableLiveData<Response> data)
     {
-        // 创建一个不验证证书的 TrustManager
-        TrustManager[] trustAllCertificates = new TrustManager[]
-                {
-                        new X509TrustManager()
-                        {
-                            public X509Certificate[] getAcceptedIssuers()
-                            {
-                                return new X509Certificate[0];  // 返回空数组，避免返回 null
-                            }
+        new Thread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                var response = HttpPost(url,params);
 
-                            public void checkClientTrusted(X509Certificate[] certs, String authType)
-                            {
-                            }
-
-                            public void checkServerTrusted(X509Certificate[] certs, String authType)
-                            {
-                            }
-                        }
-                };
-
-        // 初始化 SSLContext
-        SSLContext sslContext = SSLContext.getInstance("TLS");
-        sslContext.init(null, trustAllCertificates, new java.security.SecureRandom());
-
-        // 获取 SSLSocketFactory
-        SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
-
-        // 创建 OkHttpClient 并配置 SSL
-        return new OkHttpClient.Builder()
-                .sslSocketFactory(sslSocketFactory, (X509TrustManager) trustAllCertificates[0]) // 使用自定义的 TrustManager
-                .hostnameVerifier((hostname, session) -> true)  // 忽略主机名验证
-                .build();
+                // MutableLiveData<String>  data has value changed event
+                data.postValue(response);
+            }
+        }).start();
     }
+
+    public static Response HttpPost(String url,
+                                  Map<String, String> params)
+    {
+        OkHttpClient client = null;
+        try
+        {
+            client = getUnsafeOkHttpClient();
+        }
+        catch (NoSuchAlgorithmException e)
+        {
+            return null;
+        }
+        catch (KeyManagementException e)
+        {
+            return null;
+        }
+        catch (Exception e)
+        {
+            String str = e.getMessage();
+            return null;
+        }
+
+        FormBody.Builder builder = new FormBody.Builder();
+        if(params != null)
+        {
+            for (var pair : params.entrySet())
+            {
+                builder.add(pair.getKey(), pair.getValue());
+            }
+        }
+        FormBody formBody = builder.build();
+
+        // 构建 POST 请求
+        Request request = new Request.Builder()
+                .url(url) // 替换为实际的 URL
+                .post(formBody)
+                .build();
+
+        // 发送请求并处理响应
+        try (Response response = client.newCall(request).execute())
+        {
+            if (response.isSuccessful())
+            {
+                return response;
+            }
+            else
+            {
+
+            }
+        }
+        catch (Exception e)
+        {
+
+        }
+
+        return null;
+    }
+
+
     @FunctionalInterface
-    public interface MyCallback {
+    public interface MyCallback
+    {
         void invoke(String message);
     }
+
     private static final String TAG = "StreamData";
-    public static void fetchStreamData(String url, MyCallback callback )
+
+    public static void fetchStreamData(String url, MyCallback callback)
     {
         OkHttpClient client = null;
         try
@@ -145,7 +230,7 @@ public class HttpService
             public void onFailure(Call call, IOException e)
             {
                 // 请求失败
-                int a =0;
+                int a = 0;
             }
 
             @Override
@@ -177,7 +262,6 @@ public class HttpService
                                     buffer.setLength(0);
 
                                     callback.invoke(data);
-
 
 
                                 }
