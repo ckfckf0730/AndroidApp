@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/nav_chat"
+        android:title="Chat"
+        android:text="Chat"
+        android:textColor="#FFFFFF" />
+
+    <item
+        android:id="@+id/nav_render"
+        android:title="Render"
+        android:text="Render"
+        android:textColor="#FFFFFF" />
+
+    <item
+        android:id="@+id/nav_login"
+        android:title="Login"
+        android:text="Login"
+        android:textColor="#FFFFFF" />
+
+    <item
+        android:id="@+id/nav_register"
+        android:title="Register"
+        android:text="Register"
+        android:textColor="#FFFFFF" />
+
+</menu>

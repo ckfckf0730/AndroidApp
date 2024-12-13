@@ -10,6 +10,9 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.example.testapplication.Model.HttpViewModel;
 import com.example.testapplication.R;
+import com.example.testapplication.Service.NavigationHelper;
+
+import android.widget.PopupMenu;
 
 public class MainActivity extends AppCompatActivity
 {
@@ -23,6 +26,7 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);  // set layout
 
         Button button2 = findViewById(R.id.button2);
+
 
         httpViewModel = new ViewModelProvider(this)
                 .get(HttpViewModel.class);
@@ -42,6 +46,8 @@ public class MainActivity extends AppCompatActivity
                         "https://10.0.2.2:7241/Azure/PictureList");
             }
         });
+
+        NavigationHelper.CreateNavigation(this);
     }
 
 }

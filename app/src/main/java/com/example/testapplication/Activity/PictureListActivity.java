@@ -11,9 +11,6 @@ import com.example.testapplication.Service.HttpService;
 
 public class PictureListActivity extends AppCompatActivity
 {
-    private HttpViewModel httpViewModel;
-
-
 
 
     @Override
@@ -21,9 +18,6 @@ public class PictureListActivity extends AppCompatActivity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_picturelist);
-
-        httpViewModel = new ViewModelProvider(this)
-                .get(HttpViewModel.class);
 
 
         HttpService.MyCallback myCallback = (message) -> {
