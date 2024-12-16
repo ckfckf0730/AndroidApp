@@ -3,6 +3,7 @@ package com.example.testapplication.Service;
 import android.content.Intent;
 import android.widget.Button;
 import android.widget.PopupMenu;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -15,6 +16,12 @@ public class NavigationHelper
     public static void CreateNavigation(AppCompatActivity activity)
     {
         Button buttonMenu = activity.findViewById(R.id.nav_menu);
+        TextView accountText = activity.findViewById(R.id.nav_account);
+
+        if(UserService.GetUserName() != null)
+        {
+            accountText.setText(UserService.GetUserName());
+        }
 
         buttonMenu.setOnClickListener(view -> {
             PopupMenu popupMenu = new PopupMenu(

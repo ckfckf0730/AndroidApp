@@ -1,5 +1,6 @@
 package com.example.testapplication.Activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -45,6 +46,10 @@ public class LoginActivity extends AppCompatActivity
                 JSONObject userObject = jsonResponse.getJSONObject("user");
                 String email = userObject.getString("email");
                 UserService.SetUserName(email);
+
+                Intent intent = new Intent(LoginActivity.this,
+                        MainActivity.class);
+                startActivity(intent);
             }
             catch (JSONException e)
             {
