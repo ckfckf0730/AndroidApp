@@ -9,8 +9,13 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.example.testapplication.R;
 import com.example.testapplication.Service.HttpService;
+import com.example.testapplication.Service.UserService;
 import com.google.android.material.textfield.TextInputLayout;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +24,7 @@ import okhttp3.Response;
 
 public class LoginActivity extends AppCompatActivity
 {
-    private final MutableLiveData<Response> data = new MutableLiveData<>();
+    private final MutableLiveData<String> data = new MutableLiveData<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -31,14 +36,26 @@ public class LoginActivity extends AppCompatActivity
 
         data.observe(this, newData ->
         {
-            List<String> cookies = newData.headers("Set-Cookie");
-            if (!cookies.isEmpty())
+
+            JSONObject jsonResponse = null;
+            try
             {
-                for (String cookie : cookies)
-                {
-                    int a = 0;
-                }
+                jsonResponse = new JSONObject(newData);
+                String message = jsonResponse.getString("message");
+                JSONObject userObject = jsonResponse.getJSONObject("user");
+                String email = userObject.getString("email");
+                UserService.SetUserName(email);
             }
+            catch (JSONException e)
+            {
+                int b = 0;
+            }
+            catch (Exception e)
+            {
+                int b = 0;
+            }
+
+
         });
 
 
@@ -54,7 +71,7 @@ public class LoginActivity extends AppCompatActivity
                 params.put("Email", emailInput.getEditText().getText().toString());
                 params.put("Password", passInput.getEditText().getText().toString());
                 params.put("RememberMe", "true");
-                HttpService.HttpPostAsync(HttpService.ServerHost + "Account/LoginAndroid",
+                HttpService.HttpCookieAsync(HttpService.ServerHost + "Account/LoginAndroid",
                         params,
                         data);
             }

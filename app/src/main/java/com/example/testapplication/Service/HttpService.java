@@ -5,10 +5,13 @@ import androidx.lifecycle.MutableLiveData;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
+import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import okio.BufferedSource;
+import okhttp3.Cookie;
+import okhttp3.CookieJar;
 
 import java.io.IOException;
 import java.security.KeyManagementException;
@@ -22,6 +25,9 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -61,7 +67,8 @@ public class HttpService
         // 创建 OkHttpClient 并配置 SSL
         return new OkHttpClient.Builder()
                 .sslSocketFactory(sslSocketFactory, (X509TrustManager) trustAllCertificates[0]) // 使用自定义的 TrustManager
-                .hostnameVerifier((hostname, session) -> true)  // 忽略主机名验证
+                .hostnameVerifier((hostname, session) -> true)  // 忽略主机名验证;
+                .cookieJar(cookieJar)
                 .build();
     }
 
@@ -115,14 +122,14 @@ public class HttpService
 
     public static void HttpPostAsync(String url,
                                      Map<String, String> params,
-                                     MutableLiveData<Response> data)
+                                     MutableLiveData<String> data)
     {
         new Thread(new Runnable()
         {
             @Override
             public void run()
             {
-                var response = HttpPost(url,params);
+                var response = HttpPost(url, params);
 
                 // MutableLiveData<String>  data has value changed event
                 data.postValue(response);
@@ -130,8 +137,8 @@ public class HttpService
         }).start();
     }
 
-    public static Response HttpPost(String url,
-                                  Map<String, String> params)
+    private static String HttpPost(String url,
+                                     Map<String, String> params)
     {
         OkHttpClient client = null;
         try
@@ -153,7 +160,7 @@ public class HttpService
         }
 
         FormBody.Builder builder = new FormBody.Builder();
-        if(params != null)
+        if (params != null)
         {
             for (var pair : params.entrySet())
             {
@@ -171,9 +178,89 @@ public class HttpService
         // 发送请求并处理响应
         try (Response response = client.newCall(request).execute())
         {
+            var message = response.body().string();
             if (response.isSuccessful())
             {
-                return response;
+                return message;
+            }
+            else
+            {
+
+            }
+        }
+        catch (Exception e)
+        {
+
+        }
+
+        return null;
+    }
+
+        public static void HttpCookieAsync(String url,
+                                           Map<String, String> params,
+                                           MutableLiveData<String> data)
+        {
+            new Thread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    var message = HttpCookie(url, params);
+
+                    // MutableLiveData<String>  data has value changed event
+                    data.postValue(message);
+                }
+            }).start();
+        }
+
+    private static String HttpCookie(String url,
+                                       Map<String, String> params)
+    {
+
+
+        OkHttpClient client = null;
+        try
+        {
+            client = getUnsafeOkHttpClient();
+        }
+        catch (NoSuchAlgorithmException e)
+        {
+            return null;
+        }
+        catch (KeyManagementException e)
+        {
+            return null;
+        }
+        catch (Exception e)
+        {
+            String str = e.getMessage();
+            return null;
+        }
+
+        FormBody.Builder builder = new FormBody.Builder();
+        if (params != null)
+        {
+            for (var pair : params.entrySet())
+            {
+                builder.add(pair.getKey(), pair.getValue());
+            }
+        }
+        FormBody formBody = builder.build();
+
+        // 构建 POST 请求
+        Request request = new Request.Builder()
+                .url(url) // 替换为实际的 URL
+                .post(formBody)
+                .build();
+
+        // 发送请求并处理响应
+        try (Response response = client.newCall(request).execute())
+        {
+            var body = response.body().string();
+
+            if (response.isSuccessful())
+            {
+                return body;
             }
             else
             {
@@ -282,5 +369,26 @@ public class HttpService
             }
         });
     }
+
+    static CookieJar cookieJar = new CookieJar()
+    {
+        private final HashMap<HttpUrl, List<Cookie>> cookies = new HashMap<>();
+
+        @Override
+        public void saveFromResponse(HttpUrl url, List<Cookie> cookies)
+        {
+            HttpUrl baseUrl = url.newBuilder().encodedPath("/").build();
+            this.cookies.put(baseUrl, cookies);
+        }
+
+        @Override
+        public List<Cookie> loadForRequest(HttpUrl url)
+        {
+            HttpUrl baseUrl = url.newBuilder().encodedPath("/").build();
+
+            List<Cookie> cookieList = cookies.get(baseUrl);
+            return cookieList != null ? cookieList : new ArrayList<>();
+        }
+    };
 }
 
