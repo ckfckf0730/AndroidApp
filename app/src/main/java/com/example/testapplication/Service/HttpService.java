@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
@@ -85,6 +86,159 @@ public class HttpService
                 .build();
     }
 
+
+    public static void HttpGetAsync(String url,
+                                     Map<String, String> params,
+                                     MutableLiveData<String> data)
+    {
+        new Thread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                var message = HttpGet(url, params);
+
+                // MutableLiveData<String>  data has value changed event
+                data.postValue(message);
+            }
+        }).start();
+    }
+
+    public static String HttpGet(String url, Map<String,String> params)
+    {
+        OkHttpClient client = null;
+        try
+        {
+            client = getUnsafeOkHttpClient();
+        }
+        catch (NoSuchAlgorithmException e)
+        {
+            return null;
+        }
+        catch (KeyManagementException e)
+        {
+            return null;
+        }
+        catch (Exception e)
+        {
+            String str = e.getMessage();
+            return null;
+        }
+
+        HttpUrl.Builder urlBuilder = HttpUrl.parse(url).newBuilder();
+
+        if (params != null) {
+            for (var pair : params.entrySet()) {
+                urlBuilder.addQueryParameter(pair.getKey(), pair.getValue());
+            }
+        }
+
+        String finalUrl = urlBuilder.build().toString(); // 构建最终的 URL
+
+        // 构建请求
+        Request request = new Request.Builder()
+                .url(finalUrl)
+                .build();
+
+        // 发送请求并接收响应
+        OkHttpClient finalClient = client;
+        try
+        {
+            // 执行网络请求
+            Response response = finalClient.newCall(request).execute();
+            if (response.isSuccessful())
+            {
+                // 处理成功的响应
+                String responseBody = response.body().string();
+
+                return responseBody;
+            }
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public static void HttpGetStreamAsync(String url,
+                                    Map<String, String> params,
+                                    MutableLiveData<InputStream> data)
+    {
+        new Thread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                var message = HttpGetStream(url, params);
+
+                // MutableLiveData<String>  data has value changed event
+                data.postValue(message);
+            }
+        }).start();
+    }
+
+    public static InputStream HttpGetStream(String url, Map<String,String> params)
+    {
+        OkHttpClient client = null;
+        try
+        {
+            client = getUnsafeOkHttpClient();
+        }
+        catch (NoSuchAlgorithmException e)
+        {
+            return null;
+        }
+        catch (KeyManagementException e)
+        {
+            return null;
+        }
+        catch (Exception e)
+        {
+            String str = e.getMessage();
+            return null;
+        }
+
+        HttpUrl.Builder urlBuilder = HttpUrl.parse(url).newBuilder();
+
+        if (params != null) {
+            for (var pair : params.entrySet()) {
+                urlBuilder.addQueryParameter(pair.getKey(), pair.getValue());
+            }
+        }
+
+        String finalUrl = urlBuilder.build().toString(); // 构建最终的 URL
+
+        // 构建请求
+        Request request = new Request.Builder()
+                .url(finalUrl)
+                .build();
+
+        // 发送请求并接收响应
+        OkHttpClient finalClient = client;
+        try
+        {
+            // 执行网络请求
+            Response response = finalClient.newCall(request).execute();
+            if (response.isSuccessful())
+            {
+                // 处理成功的响应
+                var responseBody = response.body().byteStream();
+
+                return responseBody;
+            }
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+
+
     public static String HttpGet(String url)
     {
         OkHttpClient client = null;
@@ -133,64 +287,6 @@ public class HttpService
         return null;
     }
 
-    private static String HttpPost(String url,
-                                   Map<String, String> params)
-    {
-        OkHttpClient client = null;
-        try
-        {
-            client = getUnsafeOkHttpClient();
-        }
-        catch (NoSuchAlgorithmException e)
-        {
-            return null;
-        }
-        catch (KeyManagementException e)
-        {
-            return null;
-        }
-        catch (Exception e)
-        {
-            String str = e.getMessage();
-            return null;
-        }
-
-        FormBody.Builder builder = new FormBody.Builder();
-        if (params != null)
-        {
-            for (var pair : params.entrySet())
-            {
-                builder.add(pair.getKey(), pair.getValue());
-            }
-        }
-        FormBody formBody = builder.build();
-
-        // 构建 POST 请求
-        Request request = new Request.Builder()
-                .url(url) // 替换为实际的 URL
-                .post(formBody)
-                .build();
-
-        // 发送请求并处理响应
-        try (Response response = client.newCall(request).execute())
-        {
-            var message = response.body().string();
-            if (response.isSuccessful())
-            {
-                return message;
-            }
-            else
-            {
-
-            }
-        }
-        catch (Exception e)
-        {
-
-        }
-
-        return null;
-    }
 
     public static void HttpPostAsync(String url,
                                      Map<String, String> params,
@@ -321,7 +417,7 @@ public class HttpService
                     // 获取流式数据
                     BufferedSource source = response.body().source();
 
-                    StringBuilder buffer = new StringBuilder();
+                    //StringBuilder buffer = new StringBuilder();
 
                     while (!source.exhausted())
                     {
@@ -329,26 +425,7 @@ public class HttpService
                         String dataChunk = source.readUtf8Line(); // 每次读取一行数据
                         if (dataChunk != null && !dataChunk.isEmpty())
                         {
-                            buffer.append(dataChunk);
-                            // 判断是否有完整的数据包（例如 JSON 对象）
-                            if (buffer.toString().endsWith("\n"))
-                            {
-                                try
-                                {
-                                    // 解析 JSON 数据
-                                    String data = buffer.toString();
-                                    // 清空缓冲区
-                                    buffer.setLength(0);
-
-                                    callback.invoke(data);
-
-
-                                }
-                                catch (Exception e)
-                                {
-
-                                }
-                            }
+                            callback.invoke(dataChunk);
                         }
                     }
                     // 关闭源

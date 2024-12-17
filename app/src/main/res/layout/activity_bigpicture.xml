@@ -1,16 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<android.widget.ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/picturelist"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fitsSystemWindows="true"
         android:orientation="vertical">
 
-    </LinearLayout>
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/bigpicture"
+        android:scaleType="centerInside"
+    />
 
-</android.widget.ScrollView>
+    </LinearLayout>

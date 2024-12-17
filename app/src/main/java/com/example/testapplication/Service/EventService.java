@@ -1,5 +1,7 @@
 package com.example.testapplication.Service;
 
+import org.json.JSONException;
+
 public class EventService
 {
     @FunctionalInterface

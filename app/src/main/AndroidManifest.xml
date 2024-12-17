@@ -26,6 +26,7 @@
         <activity android:name=".Activity.PictureListActivity"></activity>
         <activity android:name=".Activity.RegisterActivity"></activity>
         <activity android:name=".Activity.LoginActivity"></activity>
+        <activity android:name=".Activity.BigPictureActivity"></activity>
 
     </application>
 
