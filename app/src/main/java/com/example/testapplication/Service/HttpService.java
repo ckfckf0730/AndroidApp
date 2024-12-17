@@ -13,7 +13,13 @@ import okio.BufferedSource;
 import okhttp3.Cookie;
 import okhttp3.CookieJar;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
@@ -34,6 +40,13 @@ import java.util.Map;
 public class HttpService
 {
     public static String ServerHost = "https://10.0.2.2:7241/";
+
+    private static File cookieFile;
+
+    public static void InitCookieFile(File dir)
+    {
+        cookieFile = new File(dir, "cookies");
+    }
 
     public static OkHttpClient getUnsafeOkHttpClient() throws NoSuchAlgorithmException, KeyManagementException
     {
@@ -68,7 +81,7 @@ public class HttpService
         return new OkHttpClient.Builder()
                 .sslSocketFactory(sslSocketFactory, (X509TrustManager) trustAllCertificates[0]) // 使用自定义的 TrustManager
                 .hostnameVerifier((hostname, session) -> true)  // 忽略主机名验证;
-                .cookieJar(cookieJar)
+                .cookieJar(new PersistentCookieJar(cookieFile, HttpUrl.parse(ServerHost)))
                 .build();
     }
 
@@ -120,25 +133,8 @@ public class HttpService
         return null;
     }
 
-    public static void HttpPostAsync(String url,
-                                     Map<String, String> params,
-                                     MutableLiveData<String> data)
-    {
-        new Thread(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                var response = HttpPost(url, params);
-
-                // MutableLiveData<String>  data has value changed event
-                data.postValue(response);
-            }
-        }).start();
-    }
-
     private static String HttpPost(String url,
-                                     Map<String, String> params)
+                                   Map<String, String> params)
     {
         OkHttpClient client = null;
         try
@@ -196,25 +192,25 @@ public class HttpService
         return null;
     }
 
-        public static void HttpCookieAsync(String url,
-                                           Map<String, String> params,
-                                           MutableLiveData<String> data)
+    public static void HttpPostAsync(String url,
+                                     Map<String, String> params,
+                                     MutableLiveData<String> data)
+    {
+        new Thread(new Runnable()
         {
-            new Thread(new Runnable()
+            @Override
+            public void run()
             {
-                @Override
-                public void run()
-                {
-                    var message = HttpCookie(url, params);
+                var message = HttpCookie(url, params);
 
-                    // MutableLiveData<String>  data has value changed event
-                    data.postValue(message);
-                }
-            }).start();
-        }
+                // MutableLiveData<String>  data has value changed event
+                data.postValue(message);
+            }
+        }).start();
+    }
 
     private static String HttpCookie(String url,
-                                       Map<String, String> params)
+                                     Map<String, String> params)
     {
 
 
@@ -276,15 +272,11 @@ public class HttpService
     }
 
 
-    @FunctionalInterface
-    public interface MyCallback
-    {
-        void invoke(String message);
-    }
+
 
     private static final String TAG = "StreamData";
 
-    public static void fetchStreamData(String url, MyCallback callback)
+    public static void fetchStreamData(String url, EventService.MyCallback callback)
     {
         OkHttpClient client = null;
         try
@@ -370,15 +362,63 @@ public class HttpService
         });
     }
 
-    static CookieJar cookieJar = new CookieJar()
+    public static class PersistentCookieJar implements CookieJar
     {
         private final HashMap<HttpUrl, List<Cookie>> cookies = new HashMap<>();
+
+        private File cookieFile;
+
+        public PersistentCookieJar(File cookieFile, HttpUrl url)
+        {
+            this.cookieFile = cookieFile;
+
+            if (cookieFile.exists())
+            {
+                List<Cookie> cookieList = new ArrayList<>();
+                try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(cookieFile)))
+                {
+                    List<SerializableCookie> serializableCookies = (List<SerializableCookie>) ois.readObject();
+                    for (SerializableCookie serializableCookie : serializableCookies)
+                    {
+                        cookieList.add(serializableCookie.toCookie());
+                    }
+                    cookies.put(url,cookieList);
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+
+
+            }
+        }
 
         @Override
         public void saveFromResponse(HttpUrl url, List<Cookie> cookies)
         {
-            HttpUrl baseUrl = url.newBuilder().encodedPath("/").build();
-            this.cookies.put(baseUrl, cookies);
+            String path = url.encodedPath();
+
+            if (path.endsWith("/Account/LoginAndroid"))
+            {
+                url = url.newBuilder().encodedPath("/").build();
+
+                try (ObjectOutputStream oos = new ObjectOutputStream(
+                        new FileOutputStream(cookieFile)))
+                {
+                    List<SerializableCookie> serializableCookies = new ArrayList<>();
+                    for (Cookie cookie : cookies)
+                    {
+                        serializableCookies.add(new SerializableCookie(cookie));
+                    }
+                    oos.writeObject(serializableCookies);
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+            }
+
+            this.cookies.put(url, cookies);
         }
 
         @Override
@@ -389,6 +429,35 @@ public class HttpService
             List<Cookie> cookieList = cookies.get(baseUrl);
             return cookieList != null ? cookieList : new ArrayList<>();
         }
-    };
+    }
+
+    public static class SerializableCookie implements Serializable
+    {
+        private String name;
+        private String value;
+        private String domain;
+        private String path;
+        private long expiresAt;
+
+        public SerializableCookie(Cookie cookie)
+        {
+            this.name = cookie.name();
+            this.value = cookie.value();
+            this.domain = cookie.domain();
+            this.path = cookie.path();
+            this.expiresAt = cookie.expiresAt();
+        }
+
+        public Cookie toCookie()
+        {
+            return new Cookie.Builder()
+                    .name(name)
+                    .value(value)
+                    .domain(domain)
+                    .path(path)
+                    .expiresAt(expiresAt)
+                    .build();
+        }
+    }
 }
 

@@ -13,11 +13,19 @@ import com.example.testapplication.R;
 
 public class NavigationHelper
 {
+
     public static void CreateNavigation(AppCompatActivity activity)
     {
         Button buttonMenu = activity.findViewById(R.id.nav_menu);
         TextView accountText = activity.findViewById(R.id.nav_account);
 
+        EventService.MyCallback myCallback = (message) ->
+        {
+            accountText.setText(message);
+        };
+        UserService.SetObserve(activity,myCallback);
+
+        var test = UserService.GetUserName();
         if(UserService.GetUserName() != null)
         {
             accountText.setText(UserService.GetUserName());

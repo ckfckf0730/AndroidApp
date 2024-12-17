@@ -16,12 +16,8 @@ import com.google.android.material.textfield.TextInputLayout;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-
-import okhttp3.Response;
 
 public class LoginActivity extends AppCompatActivity
 {
@@ -76,7 +72,7 @@ public class LoginActivity extends AppCompatActivity
                 params.put("Email", emailInput.getEditText().getText().toString());
                 params.put("Password", passInput.getEditText().getText().toString());
                 params.put("RememberMe", "true");
-                HttpService.HttpCookieAsync(HttpService.ServerHost + "Account/LoginAndroid",
+                HttpService.HttpPostAsync(HttpService.ServerHost + "Account/LoginAndroid",
                         params,
                         data);
             }
