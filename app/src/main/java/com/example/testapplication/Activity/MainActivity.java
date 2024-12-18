@@ -8,11 +8,11 @@ import android.widget.Button;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.example.testapplication.Activity.Azure.PictureListActivity;
+import com.example.testapplication.Activity.Azure.UploadPictureActivity;
 import com.example.testapplication.Model.HttpViewModel;
 import com.example.testapplication.R;
 import com.example.testapplication.Service.NavigationHelper;
-
-import android.widget.PopupMenu;
 
 public class MainActivity extends AppCompatActivity
 {
@@ -25,6 +25,7 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);  // set layout
 
+        Button button = findViewById(R.id.button);
         Button button2 = findViewById(R.id.button2);
 
 
@@ -35,6 +36,17 @@ public class MainActivity extends AppCompatActivity
             Intent intent = new Intent(MainActivity.this,
                     PictureListActivity.class);
             startActivity(intent);
+        });
+
+        button.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                Intent intent = new Intent(MainActivity.this,
+                        UploadPictureActivity.class);
+                startActivity(intent);
+            }
         });
 
         button2.setOnClickListener(new View.OnClickListener()

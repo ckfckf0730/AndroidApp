@@ -2,6 +2,7 @@ package com.example.testapplication.Activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Pair;
 import android.view.View;
 import android.widget.Button;
 
@@ -68,10 +69,12 @@ public class LoginActivity extends AppCompatActivity
                 TextInputLayout emailInput = findViewById(R.id.emailInput);
                 TextInputLayout passInput = findViewById(R.id.passwordInput);
 
-                Map<String, String> params = new HashMap<String, String>();
-                params.put("Email", emailInput.getEditText().getText().toString());
-                params.put("Password", passInput.getEditText().getText().toString());
-                params.put("RememberMe", "true");
+                Map<String, Pair<String, Object>> params = new HashMap<String, Pair<String, Object>>();
+                params.put("Email", new Pair<String,Object>("String",
+                        emailInput.getEditText().getText().toString()));
+                params.put("Password", new Pair<String,Object>("String",
+                        passInput.getEditText().getText().toString()));
+                params.put("RememberMe", new Pair<String,Object>("String", "true"));
                 HttpService.HttpPostAsync(HttpService.ServerHost + "Account/LoginAndroid",
                         params,
                         data);

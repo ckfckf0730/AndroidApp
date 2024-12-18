@@ -1,12 +1,14 @@
 package com.example.testapplication.Service;
 
 import android.content.Intent;
+import android.view.View;
 import android.widget.Button;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.testapplication.Activity.Azure.PictureListActivity;
 import com.example.testapplication.Activity.LoginActivity;
 import com.example.testapplication.Activity.MainActivity;
 import com.example.testapplication.R;
@@ -18,6 +20,18 @@ public class NavigationHelper
     {
         Button buttonMenu = activity.findViewById(R.id.nav_menu);
         TextView accountText = activity.findViewById(R.id.nav_account);
+        Button buttonHome = activity.findViewById(R.id.nav_home);
+
+        buttonHome.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                Intent intent = new Intent(activity,
+                        MainActivity.class);
+                activity.startActivity(intent);
+            }
+        });
 
         EventService.MyCallback myCallback = (message) ->
         {

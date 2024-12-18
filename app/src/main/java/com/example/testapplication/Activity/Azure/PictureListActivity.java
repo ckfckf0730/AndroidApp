@@ -1,11 +1,10 @@
-package com.example.testapplication.Activity;
+package com.example.testapplication.Activity.Azure;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Base64;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -13,19 +12,12 @@ import android.widget.LinearLayout;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModelProvider;
 
-import com.example.testapplication.Model.HttpViewModel;
 import com.example.testapplication.R;
 import com.example.testapplication.Service.EventService;
 import com.example.testapplication.Service.HttpService;
-import com.example.testapplication.Service.UserService;
 
-import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.io.InputStream;
-import java.util.HashMap;
 
 
 public class PictureListActivity extends AppCompatActivity

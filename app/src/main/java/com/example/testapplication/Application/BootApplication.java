@@ -1,7 +1,9 @@
 package com.example.testapplication.Application;
 
-import android.app.Application;
+import static androidx.core.app.ActivityCompat.requestPermissions;
 
+import android.app.Application;
+import android.os.Environment;
 import androidx.lifecycle.MutableLiveData;
 
 import com.example.testapplication.Service.HttpService;
@@ -22,6 +24,8 @@ public class BootApplication extends Application
         initializeGlobalResources();
 
         initializeUser();
+
+
     }
 
     private void initializeGlobalResources()
@@ -61,4 +65,7 @@ public class BootApplication extends Application
         }).start();
 
     }
+
+
+
 }

@@ -40,4 +40,5 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     implementation("com.squareup.okhttp3:okhttp:4.10.0")
     implementation("org.jsoup:jsoup:1.18.3")
+    implementation("androidx.activity:activity-ktx:1.6.0")
 }

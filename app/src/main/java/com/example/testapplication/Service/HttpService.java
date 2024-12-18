@@ -1,13 +1,19 @@
 package com.example.testapplication.Service;
 
+import android.annotation.SuppressLint;
+import android.util.Pair;
+
 import androidx.lifecycle.MutableLiveData;
 
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
 import okhttp3.HttpUrl;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 import okio.BufferedSource;
 import okhttp3.Cookie;
@@ -88,8 +94,8 @@ public class HttpService
 
 
     public static void HttpGetAsync(String url,
-                                     Map<String, String> params,
-                                     MutableLiveData<String> data)
+                                    Map<String, String> params,
+                                    MutableLiveData<String> data)
     {
         new Thread(new Runnable()
         {
@@ -104,7 +110,7 @@ public class HttpService
         }).start();
     }
 
-    public static String HttpGet(String url, Map<String,String> params)
+    public static String HttpGet(String url, Map<String, String> params)
     {
         OkHttpClient client = null;
         try
@@ -127,8 +133,10 @@ public class HttpService
 
         HttpUrl.Builder urlBuilder = HttpUrl.parse(url).newBuilder();
 
-        if (params != null) {
-            for (var pair : params.entrySet()) {
+        if (params != null)
+        {
+            for (var pair : params.entrySet())
+            {
                 urlBuilder.addQueryParameter(pair.getKey(), pair.getValue());
             }
         }
@@ -163,8 +171,8 @@ public class HttpService
     }
 
     public static void HttpGetStreamAsync(String url,
-                                    Map<String, String> params,
-                                    MutableLiveData<InputStream> data)
+                                          Map<String, String> params,
+                                          MutableLiveData<InputStream> data)
     {
         new Thread(new Runnable()
         {
@@ -179,7 +187,7 @@ public class HttpService
         }).start();
     }
 
-    public static InputStream HttpGetStream(String url, Map<String,String> params)
+    public static InputStream HttpGetStream(String url, Map<String, String> params)
     {
         OkHttpClient client = null;
         try
@@ -202,8 +210,10 @@ public class HttpService
 
         HttpUrl.Builder urlBuilder = HttpUrl.parse(url).newBuilder();
 
-        if (params != null) {
-            for (var pair : params.entrySet()) {
+        if (params != null)
+        {
+            for (var pair : params.entrySet())
+            {
                 urlBuilder.addQueryParameter(pair.getKey(), pair.getValue());
             }
         }
@@ -236,7 +246,6 @@ public class HttpService
 
         return null;
     }
-
 
 
     public static String HttpGet(String url)
@@ -289,7 +298,7 @@ public class HttpService
 
 
     public static void HttpPostAsync(String url,
-                                     Map<String, String> params,
+                                     Map<String, Pair<String, Object>> params,
                                      MutableLiveData<String> data)
     {
         new Thread(new Runnable()
@@ -305,8 +314,9 @@ public class HttpService
         }).start();
     }
 
+    @SuppressLint("NewApi")
     private static String HttpCookie(String url,
-                                     Map<String, String> params)
+                                     Map<String, Pair<String, Object>> params)
     {
 
 
@@ -329,20 +339,54 @@ public class HttpService
             return null;
         }
 
-        FormBody.Builder builder = new FormBody.Builder();
+        //FormBody.Builder builder = new FormBody.Builder();
+        MultipartBody.Builder builder = new MultipartBody.Builder();
+        builder.setType(MultipartBody.FORM);
         if (params != null)
         {
             for (var pair : params.entrySet())
             {
-                builder.add(pair.getKey(), pair.getValue());
+                var key = pair.getKey();
+                var type = pair.getValue().first;
+                var value = pair.getValue().second;
+                if (type.equals("String"))
+                {
+                    builder.addFormDataPart(key, (String) value);
+                }
+                else if (type.equals("File"))
+                {
+                    if(value instanceof File)
+                    {
+                        File file = (File) value;
+                        RequestBody fileBody = RequestBody.create(file, MediaType.parse("application/octet-stream"));
+                        builder.addFormDataPart(key, file.getName(), fileBody); // 文件参数
+                    }
+                    else if(value instanceof InputStream)
+                    {
+                        InputStream stream = (InputStream) value;
+                        RequestBody fileBody = null;
+                        try
+                        {
+                            fileBody = RequestBody.create(stream.readAllBytes(),
+                                    MediaType.parse("image/jpeg"));
+                        }
+                        catch (Exception e)
+                        {
+
+                        }
+                        builder.addFormDataPart(key, "test", fileBody); // 文件参数
+                    }
+
+
+                }
             }
         }
-        FormBody formBody = builder.build();
+        RequestBody requestBody = builder.build();
 
         // 构建 POST 请求
         Request request = new Request.Builder()
                 .url(url) // 替换为实际的 URL
-                .post(formBody)
+                .post(requestBody)
                 .build();
 
         // 发送请求并处理响应
@@ -366,8 +410,6 @@ public class HttpService
 
         return null;
     }
-
-
 
 
     private static final String TAG = "StreamData";
@@ -459,7 +501,7 @@ public class HttpService
                     {
                         cookieList.add(serializableCookie.toCookie());
                     }
-                    cookies.put(url,cookieList);
+                    cookies.put(url, cookieList);
                 }
                 catch (Exception e)
                 {
