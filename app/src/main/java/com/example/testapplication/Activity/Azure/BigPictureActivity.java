@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.MutableLiveData;
 
 import com.example.testapplication.R;
+import com.example.testapplication.Service.HttpConstants;
 import com.example.testapplication.Service.HttpService;
 
 import java.io.InputStream;
@@ -45,7 +46,7 @@ public class BigPictureActivity extends AppCompatActivity
 
         var params =  new HashMap<String,String>();
         params.put("guid",uid);
-        HttpService.HttpGetStreamAsync(HttpService.ServerHost + "Azure/DisplayImage",
+        HttpService.HttpGetStreamAsync(HttpConstants.HttpGet_DisplayImage() ,
                 params,
                 imageData);
     }

@@ -6,6 +6,7 @@ import android.app.Application;
 import android.os.Environment;
 import androidx.lifecycle.MutableLiveData;
 
+import com.example.testapplication.Service.HttpConstants;
 import com.example.testapplication.Service.HttpService;
 import com.example.testapplication.Service.UserService;
 
@@ -47,7 +48,7 @@ public class BootApplication extends Application
                 try
                 {
                     var message = HttpService.HttpGet(
-                            HttpService.ServerHost + "Account/GetUserName");
+                            HttpConstants.HttpGet_GetUserName());
                     JSONObject jsonResponse = new JSONObject(message);
                     String islogin = jsonResponse.getString("islogin");
                     String name = jsonResponse.getString("name");

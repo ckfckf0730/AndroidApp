@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Base64;
+import android.util.Pair;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -15,9 +16,13 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.example.testapplication.R;
 import com.example.testapplication.Service.EventService;
+import com.example.testapplication.Service.HttpConstants;
 import com.example.testapplication.Service.HttpService;
+import com.example.testapplication.Service.NavigationHelper;
 
 import org.json.JSONObject;
+
+import java.util.HashMap;
 
 
 public class PictureListActivity extends AppCompatActivity
@@ -30,13 +35,13 @@ public class PictureListActivity extends AppCompatActivity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_picturelist);
+        NavigationHelper.CreateNavigation(this);
 
+        // callback of one picture data getting
         data.observe(this, newData ->
         {
-            // 处理数据 (例如根据 dataType 判断处理方式)
             if (newData.contains("\"dataType\":\"img\""))
             {
-                // 处理图片数据
                 try
                 {
                     JSONObject jsonResponse = new JSONObject(newData);
@@ -58,6 +63,7 @@ public class PictureListActivity extends AppCompatActivity
 
                         //image
                         imageView.setImageBitmap(bitmap);
+                        //image clicked event
                         imageView.setOnClickListener(v->{
                             OpenImage(uid);
                                 });
@@ -70,6 +76,11 @@ public class PictureListActivity extends AppCompatActivity
                         deleteButton.setText("Delete");
                         subLayout.addView(downloadButton);
                         subLayout.addView(deleteButton);
+
+                        //button clicked event
+                        deleteButton.setOnClickListener(v->{
+                            DeleteImage(uid);
+                        });
 
                         mainLayout.addView(subLayout);
 
@@ -93,7 +104,7 @@ public class PictureListActivity extends AppCompatActivity
             }
             else if (newData.contains("\"dataType\":\"bing\""))
             {
-                // 处理其他类型的数据
+                // Promote picture
                 int a = 0;
             }
 
@@ -138,6 +149,20 @@ public class PictureListActivity extends AppCompatActivity
         intent.putExtra("image", uid);
 
         startActivity(intent);
+    }
+
+    private void DeleteImage(String uid)
+    {
+        var params = new HashMap<String, Pair<String,Object>>();
+        params.put(HttpConstants.HttpPostParam_DeleteFile_1,
+                new Pair<String, Object>(HttpConstants.ParamType_String,uid));
+
+        HttpService.HttpPostAsync(
+                HttpConstants.HttpPost_DeleteFile(),
+                params,
+                null);
+
+        recreate();
     }
 
 }

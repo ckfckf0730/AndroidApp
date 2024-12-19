@@ -11,6 +11,10 @@
         android:fitsSystemWindows="true"
         android:orientation="vertical">
 
+        <include
+            android:id="@+id/nav_header"
+            layout="@layout/nav_header" />
+
     </LinearLayout>
 
 </android.widget.ScrollView>

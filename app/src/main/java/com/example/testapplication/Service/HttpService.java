@@ -46,7 +46,7 @@ import java.util.Map;
 
 public class HttpService
 {
-    public static String ServerHost = "https://10.0.2.2:7241/";
+
 
     private static File cookieFile;
 
@@ -88,7 +88,7 @@ public class HttpService
         return new OkHttpClient.Builder()
                 .sslSocketFactory(sslSocketFactory, (X509TrustManager) trustAllCertificates[0]) // 使用自定义的 TrustManager
                 .hostnameVerifier((hostname, session) -> true)  // 忽略主机名验证;
-                .cookieJar(new PersistentCookieJar(cookieFile, HttpUrl.parse(ServerHost)))
+                .cookieJar(new PersistentCookieJar(cookieFile, HttpUrl.parse(HttpConstants.ServerHost)))
                 .build();
     }
 
@@ -309,7 +309,11 @@ public class HttpService
                 var message = HttpCookie(url, params);
 
                 // MutableLiveData<String>  data has value changed event
-                data.postValue(message);
+                if(data != null)
+                {
+                    data.postValue(message);
+                }
+
             }
         }).start();
     }

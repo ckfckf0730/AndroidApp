@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.MutableLiveData;
 
 import com.example.testapplication.R;
+import com.example.testapplication.Service.HttpConstants;
 import com.example.testapplication.Service.HttpService;
 import com.example.testapplication.Service.UserService;
 import com.google.android.material.textfield.TextInputLayout;
@@ -75,7 +76,7 @@ public class LoginActivity extends AppCompatActivity
                 params.put("Password", new Pair<String,Object>("String",
                         passInput.getEditText().getText().toString()));
                 params.put("RememberMe", new Pair<String,Object>("String", "true"));
-                HttpService.HttpPostAsync(HttpService.ServerHost + "Account/LoginAndroid",
+                HttpService.HttpPostAsync(HttpConstants.HttpPost_Login(),
                         params,
                         data);
             }

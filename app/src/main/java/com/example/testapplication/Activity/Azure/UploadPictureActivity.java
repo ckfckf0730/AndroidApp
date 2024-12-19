@@ -1,6 +1,7 @@
 package com.example.testapplication.Activity.Azure;
 
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -16,8 +17,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.MutableLiveData;
 
 import com.example.testapplication.R;
+import com.example.testapplication.Service.HttpConstants;
 import com.example.testapplication.Service.HttpService;
 import com.example.testapplication.Service.NavigationHelper;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.InputStream;
 import java.util.HashMap;
@@ -33,9 +38,40 @@ public class UploadPictureActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_uploadpicture);
         NavigationHelper.CreateNavigation(this);
+
         TextView text = findViewById(R.id.upload_text);
         TextView textSelected = findViewById(R.id.selected_text);
         ViewGroup layout = (ViewGroup) text.getParent();
+
+        //upload callback
+        data.observe(this, newData->{
+            JSONObject jsonResponse = null;
+            try
+            {
+                jsonResponse = new JSONObject(newData);
+                String isSuccess = jsonResponse.getString("success");
+                String message = jsonResponse.getString("message");
+                ;
+                if(isSuccess.equals("true"))
+                {
+                    textSelected.setTextColor(Color.parseColor("#00FF00"));
+                }
+                else
+                {
+                    textSelected.setTextColor(Color.parseColor("#FF0000"));
+                }
+                textSelected.setText(message);
+
+            }
+            catch (JSONException e)
+            {
+                textSelected.setText("Upload Faultly");
+                textSelected.setTextColor(Color.parseColor("#FF0000"));
+            }
+
+        });
+
+
 
         ActivityResultLauncher<String> getContent = registerForActivityResult(
                 new ActivityResultContracts.GetContent(),
@@ -44,6 +80,7 @@ public class UploadPictureActivity extends AppCompatActivity
                     if (uri != null)
                     {
                         textSelected.setText(getFileNameFromUri(uri));
+                        textSelected.setTextColor(Color.parseColor("#000000"));
                         selectedFIle = uri;
                     }
                     else
@@ -90,7 +127,7 @@ public class UploadPictureActivity extends AppCompatActivity
                                         ("File",fileInputStream));
 
                                 HttpService.HttpPostAsync(
-                                        HttpService.ServerHost + "Azure/UploadFile",
+                                        HttpConstants.HttpPost_UploadFile(),
                                         params,
                                         data);
                             }
