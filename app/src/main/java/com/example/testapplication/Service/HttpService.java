@@ -5,6 +5,8 @@ import android.util.Pair;
 
 import androidx.lifecycle.MutableLiveData;
 
+import com.example.testapplication.DataModel.FileStream;
+
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
@@ -152,14 +154,10 @@ public class HttpService
         OkHttpClient finalClient = client;
         try
         {
-            // 执行网络请求
             Response response = finalClient.newCall(request).execute();
             if (response.isSuccessful())
             {
-                // 处理成功的响应
-                String responseBody = response.body().string();
-
-                return responseBody;
+                return response.body().string();
             }
         }
         catch (IOException e)
@@ -170,9 +168,11 @@ public class HttpService
         return null;
     }
 
+
+
     public static void HttpGetStreamAsync(String url,
                                           Map<String, String> params,
-                                          MutableLiveData<InputStream> data)
+                                          MutableLiveData<FileStream> data)
     {
         new Thread(new Runnable()
         {
@@ -187,7 +187,8 @@ public class HttpService
         }).start();
     }
 
-    public static InputStream HttpGetStream(String url, Map<String, String> params)
+    public static FileStream HttpGetStream(String url,
+                                            Map<String, String> params)
     {
         OkHttpClient client = null;
         try
@@ -236,7 +237,14 @@ public class HttpService
                 // 处理成功的响应
                 var responseBody = response.body().byteStream();
 
-                return responseBody;
+                var headers = response.header("Content-Disposition");
+                var fileName = GetHeader(headers,"filename");
+
+                FileStream stream = new FileStream();
+                stream.inputStream = responseBody;
+                stream.fileName = fileName;
+
+                return stream;
             }
         }
         catch (IOException e)
@@ -247,6 +255,29 @@ public class HttpService
         return null;
     }
 
+    public static String GetHeader(String content, String key)
+    {
+        String data = null;
+
+        if (content != null)
+        {
+            String[] parts = content.split(";");  //
+            for (String part : parts)
+            {
+                part = part.trim();
+                if (part.startsWith(key + "="))
+                {
+                    data = part.substring(key.length()+ 1).
+                            replace("\"", "");
+                    break;
+                }
+            }
+
+
+        }
+
+        return data;
+    }
 
     public static String HttpGet(String url)
     {
@@ -309,7 +340,7 @@ public class HttpService
                 var message = HttpCookie(url, params);
 
                 // MutableLiveData<String>  data has value changed event
-                if(data != null)
+                if (data != null)
                 {
                     data.postValue(message);
                 }
@@ -359,13 +390,13 @@ public class HttpService
                 }
                 else if (type.equals("File"))
                 {
-                    if(value instanceof File)
+                    if (value instanceof File)
                     {
                         File file = (File) value;
                         RequestBody fileBody = RequestBody.create(file, MediaType.parse("application/octet-stream"));
                         builder.addFormDataPart(key, file.getName(), fileBody); // 文件参数
                     }
-                    else if(value instanceof InputStream)
+                    else if (value instanceof InputStream)
                     {
                         InputStream stream = (InputStream) value;
                         RequestBody fileBody = null;
@@ -583,4 +614,5 @@ public class HttpService
         }
     }
 }
+
 

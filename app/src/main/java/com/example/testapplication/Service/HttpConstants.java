@@ -28,7 +28,10 @@ public class HttpConstants
         return ServerHost + "Azure/DisplayImage";
     }
 
-
+    public static String HttpGet_DownloadImage()
+    {
+        return ServerHost + "Azure/DownloadAndSave";
+    }
 
     public static String HttpGet_GetUserName()
     {

@@ -8,6 +8,7 @@ import android.widget.ImageView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.MutableLiveData;
 
+import com.example.testapplication.DataModel.FileStream;
 import com.example.testapplication.R;
 import com.example.testapplication.Service.HttpConstants;
 import com.example.testapplication.Service.HttpService;
@@ -17,7 +18,7 @@ import java.util.HashMap;
 
 public class BigPictureActivity extends AppCompatActivity
 {
-    private final MutableLiveData<InputStream> imageData = new MutableLiveData<>();
+    private final MutableLiveData<FileStream> imageData = new MutableLiveData<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -31,7 +32,7 @@ public class BigPictureActivity extends AppCompatActivity
 
         imageData.observe(this,newData->
         {
-            var bitMap = BitmapFactory.decodeStream(newData);
+            var bitMap = BitmapFactory.decodeStream(newData.inputStream);
 
             ImageView imageView = findViewById(R.id.bigpicture);
             imageView.setImageBitmap(bitMap);

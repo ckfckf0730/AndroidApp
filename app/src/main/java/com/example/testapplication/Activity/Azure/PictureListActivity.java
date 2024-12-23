@@ -14,20 +14,24 @@ import android.widget.LinearLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.MutableLiveData;
 
+import com.example.testapplication.DataModel.FileStream;
 import com.example.testapplication.R;
 import com.example.testapplication.Service.EventService;
 import com.example.testapplication.Service.HttpConstants;
 import com.example.testapplication.Service.HttpService;
 import com.example.testapplication.Service.NavigationHelper;
+import com.example.testapplication.Service.StorageService;
 
 import org.json.JSONObject;
 
+import java.io.InputStream;
 import java.util.HashMap;
 
 
 public class PictureListActivity extends AppCompatActivity
 {
     private final MutableLiveData<String> data = new MutableLiveData<>();
+    private final MutableLiveData<FileStream> imageData = new MutableLiveData<>();
 
 
     @Override
@@ -82,6 +86,11 @@ public class PictureListActivity extends AppCompatActivity
                             DeleteImage(uid);
                         });
 
+                        downloadButton.setOnClickListener(v->
+                        {
+                            DownloadImage(uid);
+                        });
+
                         mainLayout.addView(subLayout);
 
                         //set size
@@ -111,7 +120,24 @@ public class PictureListActivity extends AppCompatActivity
 
         });
 
+        // callback of download picture
+        imageData.observe(this, newData ->
+        {
+            try
+            {
+                if(newData.inputStream != null)
+                {
+                    StorageService.saveFileToMediaStore(this,
+                            newData.inputStream,
+                            newData.fileName);
+                }
+            }
+            catch(Exception e)
+            {
 
+            }
+
+        });
 
         EventService.MyCallback myCallback = (message) ->
         {
@@ -163,6 +189,15 @@ public class PictureListActivity extends AppCompatActivity
                 null);
 
         recreate();
+    }
+
+    private void DownloadImage(String uid)
+    {
+        var params =  new HashMap<String,String>();
+        params.put("guid",uid);
+        HttpService.HttpGetStreamAsync(HttpConstants.HttpGet_DownloadImage() ,
+                params,
+                imageData);
     }
 
 }
